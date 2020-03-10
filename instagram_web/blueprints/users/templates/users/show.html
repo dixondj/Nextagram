@@ -1,0 +1,158 @@
+{% extends "_layout.html" %}
+{% block title %}{{user.username}}'s profile{% endblock %}
+{% block content %}
+
+<div class="">
+        <div class="d-block text-center">
+          
+        {% if current_user != user %}
+            {% if current_user.follow_status(user) %}
+              {% if current_user.follow_status(user).approved %}
+                <a class="btn btn-danger" href="{{url_for('follows.destroy',fan_id=user.id)}}">Unfollow</a>
+              {% else %}
+                <a class="btn btn-warning" href="#">Pending</a>
+              {% endif %}
+            {% else %}
+              <a class="btn btn-success" href="{{url_for('follows.create',idol_id=user.id)}}">Follow</a>
+            {% endif %}
+        {% else %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('users.edit',sid=user.id)}}">Edit</a> 
+        {% endif %}
+    
+          <h1>@{{user.username}}</h1>
+          <img src="{{user.profile_url }}" width="200" class="img-thumbnail rounded-circle" alt="profile_image" />
+          <nav class="level">
+            <div class="level-item has-text-centered">
+              <div>
+                <p class="heading">posts</p>
+                <p class="title">{{user.images | length}}</p>
+              </div>
+            </div>
+            <div class="level-item has-text-centered">
+              <div>
+                <a style="text-decoration: none;color:black" href="#" data-toggle="modal" data-target="#followings">
+                <p class="heading">following</p>
+                <p class="title">{{user.followings | length}}</p>
+                </a>
+              </div>
+            </div>
+            <div class="level-item has-text-centered">
+              <div>
+                <a style="text-decoration: none;color:black" href="#" data-toggle="modal" data-target="#followers">
+                    <p class="heading">followers</p>
+                    <p class="title">{{user.followers | length}}</p>
+                    </a>
+              </div>
+            </div>
+            <div class="level-item has-text-centered">
+              <div>
+                <p class="heading">Likes</p>
+                <p class="title">0</p>
+              </div>
+            </div>
+          </nav>
+        </div>
+
+<!-- if (follow status is approve)/(current_user is user)/(user is not private),show images -->
+{% if current_user==user or user.private == False or current_user.follow_status(user).approved %}
+<div class="row mt-5">
+    {% for image in user.images %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-image">
+                    <figure class="image" style="background-image: url('{{image.image_url}}');background-size:contain;background-repeat: no-repeat;padding-top:90%;background-position: center;">
+                    </figure>
+                </div>
+                <div class="card-content">
+                    <div class="content">
+                    <p class="m-0">{{image.caption}}</p>    
+                    <small class="text-secondary">
+                        <time>- {{image.created_at.strftime('%I:%M %p, %b %d')}}</time>
+                    </small>
+                    <p>Accumulated ${{ image.endorsements | sum(attribute='amount')}}</p>
+                    {% if current_user != user %}
+                    <br>
+                    <a href="{{url_for('endorsement.new',id=image.id)}}" class="btn btn-primary">Donate</a>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+    <h5 class="text-center text-secondary mt-5">Follow @{{user.username}} to view the profile.</h5>
+  {% endif %}
+</div>
+
+<div class="modal fade" id="pending" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <img src="{{user.profile_url }}" width="100" class="rounded-circle my-3" alt="profile_image" />
+                <p>If you change your mind, you'll have to request to follow <strong>@{{user.username}}</strong> again.</p>
+                <a href="{{url_for('follows.unfollow',idol_id=user.id)}}" class="btn btn-primary">Unfollow</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+    </div>
+<!-- unfollow Modal -->
+<div class="modal fade" id="unfollow" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <img src="{{user.profile_url }}" width="100" class="rounded-circle my-3" alt="profile_image" />
+                <p>Unfollow <strong>@{{user.username}}</strong>?</p>
+                <a href="{{url_for('follows.unfollow',idol_id=user.id)}}" class="btn btn-primary">Unfollow</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- followers Modal -->
+<div class="modal fade" id="followers" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header text-center">
+              <h6>Followers</h6>
+            </div>
+            <div class="modal-body">
+              {% for fan in user.followers %}
+              <div class="mb-2">
+                <img src="{{fan.profile_url }}" width="48" class="img-thumbnail rounded-circle" alt="profile_image" />
+                <span>{{fan.username}}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- followings Modal -->
+      <div class="modal fade" id="followings" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header text-center">
+              <h6>Following</h6>
+            </div>
+            <div class="modal-body">
+              {% for idol in user.followings %}
+              <div class="d-flex justify-content-between">
+                <a style="text-decoration: none;color:black" href="{{url_for('users.show',username=idol.username)}}">
+                  <img src="{{idol.profile_url }}" width="48" class="img-thumbnail rounded-circle" alt="profile_image" />
+                  <span>{{idol.username}}</span>
+                </a>
+                <div class="align-self-center">
+                  <a class="btn btn-outline-dark btn-sm" href="{{url_for('follows.unfollow',idol_id=idol.id)}}">Following</a>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+{% endblock %}
+

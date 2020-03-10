@@ -4,9 +4,101 @@
   Homepage
 {% endblock %}
 
-{% block header %}
-{% endblock %}
 
 {% block content %}
-  <h1>Homepage</h1>
+<div class="row">
+  <div class="col-md-8 px-5">
+    {% for image in images %}
+      <div class="card mb-3">
+        <div class="card-image">
+          <figure class="image">
+            <img src="{{image.image_url}}" alt="post_image">
+          </figure>
+        </div>
+        <div class="card-content">
+          <a style="text-decoration: none;" href="{{url_for('users.show',username=image.user.username)}}">
+            <div class="media">
+              <div class="media-left">
+                <figure class="image is-48x48">
+                  <img src="{{image.user.profile_url}}" class="img-thumbnail rounded-circle" alt="profile_image">
+                </figure>
+              </div>
+              <div class="media-content">
+                <p class="title is-4">{{image.user.username}}</p>
+                <small class="text-secondary">
+                  <time>- {{image.created_at.strftime('%I:%M %p, %b %d')}}</time>
+                </small>
+              </div>
+            </div>
+          </a>
+          <div class="content">
+            {{image.caption}}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-content">
+      <a style="text-decoration: none;color:black" href="{{url_for('users.show',username=current_user.username)}}">
+        <div class="media">
+          <div class="media-left">
+            <figure class="image is-48x48 ">
+              <img src="{{current_user.profile_url}}" class="img-thumbnail rounded-circle" alt="profile_image">
+            </figure>
+          </div>
+          <div class="media-content">
+            <p class="is-4 m-0 p-0">{{current_user.username}}</p>
+            <small class="text-secondary m-0">@{{current_user.username}}</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    
+    <div class="card mb-3">
+        <span class="mt-2 ml-3">Your following</span>
+      {% for user in users %}
+      {% if user != current_user %}
+        <div class="card-content py-1">
+          <a style="text-decoration: none;color:black" href="{{url_for('users.show',username=user.username)}}">
+            <div class="media">
+              <div class="media-left">
+                <figure class="image is-48x48 ">
+                  <img src="{{user.profile_url}}" class="img-thumbnail rounded-circle" alt="profile_image">
+                </figure>
+              </div>
+              <div class="media-content">
+                <p class="is-4">{{user.username}}</p>
+              </div>
+            </div>
+          </a>
+          <div class="">
+              <a class="btn btn-outline-secondary btn-sm" href="{{url_for('follows.create',idol_id=user.id)}}">Follow</a>
+            </div>
+          </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <div class="card">
+      <span class="mt-2 ml-3">Suggestions For You</span>
+      {% for user in not_following %}
+      <div class="card-content py-1 d-flex justify-content-between">
+        <a style="text-decoration: none;color:black;" href="{{url_for('users.show',username=user.username)}}">
+          <div class="media">
+            <div class="media-left">
+              <figure class="image is-48x48 ">
+                <img src="{{user.profile_url}}" class="img-thumbnail rounded-circle" alt="profile_image">
+              </figure>
+            </div>
+            <div class="media-content">
+              <p class="is-4">{{user.username}}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 {% endblock %}

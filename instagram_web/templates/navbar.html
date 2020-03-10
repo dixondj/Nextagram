@@ -1,0 +1,115 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" style="min-height: auto;" href="/">
+          <!-- <img src="{{ url_for('static', filename='images/next.ico') }}" width="36" alt="logo"> -->
+          Nextagram
+        </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+        <li class="nav-item active">
+            <a class="nav-link" href="{{url_for ('home')}}">Home <span class="sr-only">(current)</span></a>
+        </li>
+        {% if current_user.is_authenticated %}
+        <div class="dropdown is-right">
+                <div class="dropdown-trigger">
+                  <a id="showRequest" class="nav-link" aria-haspopup="true" aria-controls="dropdown-menu3">Request</a>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu3" role="menu">
+                  <div class="dropdown-content">
+                    <div class="px-4 mb-2">
+                      <h6 class="m-0">{{current_user.get_request|length}} Follow Requests</h6>
+                      <small class="text-secondary">Approve or ignore requests</small>
+                    </div>
+                    {% for request in current_user.get_request %}
+                      <div class="dropdown-item d-flex justify-content-between">
+                        <a style="text-decoration: none;color:black" href="{{url_for('users.show',username=request.fan.username)}}">
+                          <img src="{{request.fan.profile_image_url }}" width="48" class="img-thumbnail rounded-circle" alt="profile_image" />
+                          <span>{{request.fan.username}}</span>
+                        </a>
+                        <div class="align-self-center">
+                          <a class="btn btn-primary btn-sm" href="{{url_for('follows.update',fan_id=request.fan.id)}}">Confirm</a>
+                          <a class="btn btn-outline-dark btn-sm" href="{{url_for('follows.destroy',fan_id=request.fan.id)}}">Delete</a>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-toggle="modal" data-target="#exampleModal">Upload</a>
+            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('sessions.destroy')}}">Sign Out</a>
+        </li>
+        <!-- <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.edit',sid=current_user.id)}}">Edit User</a>
+            </li> -->
+        <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.show',username=current_user.username)}}">View profile</a>
+            </li>
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('sessions.new')}}">Sign In</a>
+        </li>
+        <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.new')}}">Sign Up</a>
+            </li>
+        {% endif %}
+        </ul>
+    </div>
+    </nav>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">New Images</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <img id="previewimage" width="100%" class="mb-2"/>
+                  <form action="{{url_for('images.create')}}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="input-group">
+                    <div class="custom-file">
+                        <input type="file" id="uploadFile" class="custom-file-input" name="image_file" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04">
+                        <label class="custom-file-label" for="inputGroupFile04">Choose file</label>
+                      </div>
+                      <div class="input-group-append">
+                            <button class="btn btn-outline-success" type="submit" id="inputGroupFileAddon04">Upload</button>
+                          </div>
+                        </div>
+                        <div class="control">
+                          <textarea class="textarea" name="caption" placeholder="Normal textarea"></textarea>
+                        </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <script>
+            // live preview image
+            document.getElementById("uploadFile").onchange = function () {
+              let reader = new FileReader();
+              reader.onload = function (e) {
+                document.getElementById("previewimage").src = e.target.result;
+              };
+              reader.readAsDataURL(this.files[0]);
+            };
+            $('.custom-file-input').on('change', function() { 
+              let fileName = $(this).val().split('\\').pop(); 
+              $(this).next('.custom-file-label').addClass("selected").html(fileName); 
+            });
+            // control dropdown
+            $("#showRequest").click(function(){
+                if ($(".dropdown").hasClass("is-active")){
+                $(".dropdown").removeClass("is-active")
+
+                }else{
+                $(".dropdown").addClass("is-active")
+                }
+            })
+          </script> 
